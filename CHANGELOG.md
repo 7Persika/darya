@@ -5,6 +5,17 @@ All notable changes to Darya are documented here. Darya follows
 pipeline details live in the [README](README.md) and the upgrade spec
 (`darya-comprehensive-upgrade-spec.md`).
 
+## [1.9.5] - 2026-09-08
+
+### Changed
+
+- Android release builds are now manual-only in GitHub Actions. Pushing
+  a version tag no longer starts the APK/AAB build; maintainers run the
+  workflow manually with a release tag and can opt in to replacing the
+  existing GitHub Release for that same tag.
+- Android release assets now use lowercase filenames:
+  `darya-<tag>-release.aab` and `darya-<tag>-release.apk`.
+
 ## [1.9.4] - 2026-08-27
 
 ### Fixed

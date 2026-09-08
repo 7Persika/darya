@@ -521,26 +521,37 @@ After the first visit, Darya works fully offline. You can install it on your pho
 
 ## Android APK Builds
 
-The `android/` platform folder is committed. Pushing a version tag (for
-example `1.2.3`, no `v` prefix) triggers the
-`.github/workflows/build-android.yml` workflow, which:
+The `android/` platform folder is committed. Android releases are built
+only when you manually run `.github/workflows/build-android.yml` from the
+GitHub Actions tab. Pushing a version tag does not trigger this workflow.
+
+When starting the workflow, enter the release tag to publish (for example
+`1.2.3`). If the tag does not already exist, the workflow creates the
+GitHub Release, and the release action creates the tag at the commit/ref
+you selected for the manual run. If the tag already exists, the workflow
+checks out that tag before building so the attached files match the tagged
+source. To rebuild the files for an existing release, enable **Replace
+existing release**; the workflow deletes and recreates the GitHub Release
+for the same tag after the APK/AAB build succeeds, without deleting or
+moving the git tag.
+
+The workflow:
 
 1. runs the full CI gate (`npm run test:full`: lint, CSS lint, format
    check, and the complete Node test suite), then syncs the web bundle into the
    platform (`npm run sync:web && npx cap sync android`),
-2. regenerates the Android launcher icons from `assets/icons` (see the
-   *App icon* note below),
-3. stamps the app version from the tag (`1.2.3` becomes `versionCode`
-   123, `versionName "1.2.3"`),
-4. builds a **signed release AAB** and a **signed release APK** (the
+2. stamps the app version from the requested tag (`1.2.3` becomes
+   `versionCode` 123, `versionName "1.2.3"`),
+3. builds a **signed release AAB** and a **signed release APK** (the
    AAB is required by Google Play, the APK is used by Iranian stores
    like Cafe Bazaar and Myket),
-5. attaches both to the GitHub Release for the tag, with the version
-   embedded in the filename (e.g. `Darya-1.2.3-release.aab` and
-   `Darya-1.2.3-release.apk`).
+4. attaches both to the GitHub Release for the tag, with the version
+   embedded in the filename (e.g. `darya-1.2.3-release.aab` and
+   `darya-1.2.3-release.apk`), and also keeps them as workflow artifacts.
 
-The workflow can also be run manually from the Actions tab; without
-signing secrets it produces a debug APK for testing instead.
+All four Android signing secrets must be configured before running the
+workflow; manual release builds fail early if any signing secret is
+missing.
 
 ### Native shell behavior
 
@@ -665,9 +676,10 @@ Work through this checklist once, before the first release:
 4. **Enable GitHub Pages** (Settings > Pages, deploy from a branch) so
    [PRIVACY.md](PRIVACY.md) resolves at a public URL for the Play
    Console, or host it anywhere else.
-5. **Trigger the workflow** by pushing the version tag; confirm the
-   GitHub Release shows the version-tagged `Darya-<tag>-release.aab`
-   and `Darya-<tag>-release.apk` attached, and that the APK is signed
+5. **Trigger the workflow** manually from the GitHub Actions tab, enter
+   the version tag, and confirm the GitHub Release shows the
+   version-tagged `darya-<tag>-release.aab` and
+   `darya-<tag>-release.apk` attached, and that the APK is signed
    with your key (install it on a device, or check with
    `apksigner verify --print-certs`).
 6. **Upload:** the AAB to Google Play (enrolling in Play App Signing),
@@ -707,9 +719,9 @@ The project ships with dependency-free test suites:
 - **`npm run test:full`** runs lint, CSS lint, formatting check, and
   the full test suite together, matching the CI gate. CI runs this same
   gate on every push to any branch and on every pull request
-  (`.github/workflows/ci.yml`), so a regression is caught at PR time
-  rather than only when a release tag is pushed; the Android tag
-  workflow re-runs it before every release build.
+  (`.github/workflows/ci.yml`), so a regression is caught at PR time;
+  the manual Android release workflow re-runs it before every release
+  build.
 
 The scenario directory contains more than one hundred bilingual and
 multi-turn fixtures spanning daily life, personas, knowledge, mixed topics,
@@ -772,8 +784,8 @@ node scripts/bump-version.mjs 1.3.1 --dry-run
 
 The script deliberately does not write `CHANGELOG.md` (its entries are
 hand-written prose) and does not create the git tag. After bumping, add
-a changelog entry, commit, and push the version tag to trigger the
-Android release build (see "Android APK Builds").
+a changelog entry, commit, and run the manual Android release workflow
+with the new version tag (see "Android APK Builds").
 
 ### Manually
 
