@@ -249,7 +249,7 @@ async function main() {
     console.log(`${DRY_RUN_FLAG}: nothing was written.`);
   } else {
     console.log(
-      'Next: add a CHANGELOG.md entry, commit, and push the version tag to trigger the Android release build.'
+      'Next: add a CHANGELOG.md entry, commit, and run the manual Android release workflow with the new version tag.'
     );
   }
 }
